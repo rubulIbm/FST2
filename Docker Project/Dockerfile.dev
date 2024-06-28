@@ -1,0 +1,17 @@
+# Use an existing docker image as a base
+FROM node:18-alpine
+
+# Create a Work Directory
+WORKDIR /usr/app
+
+#copy files from the host to WORKDIR
+COPY ./package.json ./
+
+#install dependencies for the app
+RUN npm install 
+
+#Copy everything else to the container
+COPY ./ ./
+
+#start the server
+CMD ["npm", "run", "serve"]

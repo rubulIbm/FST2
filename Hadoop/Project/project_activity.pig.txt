@@ -1,0 +1,31 @@
+--Load data from hdfs
+inputDialogues4 = Load 'hdfs:///user/rkd/inputs/episodeIV_dialogues.txt' using PigStorage('\t) As (name:chararray, line:chararray);
+inputDialogues5 = Load 'hdfs:///user/rkd/inputs/episodeV_dialogues.txt' using PigStorage('\t) As (name:chararray, line:chararray);
+inputDialogues6 = Load 'hdfs:///user/rkd/inputs/episodeVI_dialogues.txt' using PigStorage('\t) As (name:chararray, line:chararray);
+
+--Filter out the first 2 lines from each file
+ranked4 = RANK inputDialogues4;
+OnlyDialogues4 = filter ranked4 by (rank_inputDialogues4 > 2);
+ranked5 = RANK inputDialogues5;
+OnlyDialogues5 = filter ranked5 by (rank_inputDialogues5 > 2);
+ranked6 = RANK inputDialogues6;
+OnlyDialogues6 = filter ranked6 by (rank_inputDialogues6 > 2);
+
+--merge the 3 inputs
+inputData = union OnlyDialogues4, OnlyDialogues5, OnlyDialogues6;
+
+--group by name
+groupByName = group inputData by name;
+
+--count the number of lines by each character
+name = foreach groupByName generate $0 as name, count($1) as no_of_lines;
+nameOrdered = order names by no_of_lines desc;
+
+--remove the outputs folder
+rmf hdfs:///user/rkd/outputs;
+
+--store result in hdfs
+store namesOrdered into 'hdfs:///user/saahil/outputs' using PigStorage('\t);
+
+
+
